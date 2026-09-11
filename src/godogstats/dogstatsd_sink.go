@@ -60,12 +60,24 @@ func WithMogrifierFromEnv(keys []string) goDogStatsSinkOption {
 	}
 }
 
+// buildAddr returns the address to pass to statsd.New. A host carrying one of
+// datadog-go's address prefixes (unix://, unixgram://, unixstream://, or a
+// Windows named pipe) is already a complete address, so no port is appended.
+func (g *godogStatsSink) buildAddr() string {
+	for _, prefix := range statsd.AddressPrefixes {
+		if strings.HasPrefix(g.config.host, prefix) {
+			return g.config.host
+		}
+	}
+	return g.config.host + ":" + strconv.Itoa(g.config.port)
+}
+
 func NewSink(opts ...goDogStatsSinkOption) (*godogStatsSink, error) {
 	sink := &godogStatsSink{}
 	for _, opt := range opts {
 		opt(sink)
 	}
-	client, err := statsd.New(sink.config.host+":"+strconv.Itoa(sink.config.port), statsd.WithoutClientSideAggregation())
+	client, err := statsd.New(sink.buildAddr(), statsd.WithoutClientSideAggregation())
 	if err != nil {
 		return nil, err
 	}

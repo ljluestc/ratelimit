@@ -1079,6 +1079,11 @@ To enable dogstatsd integration set:
 
 1. `USE_DOG_STATSD`: `true` to use [DogStatsD](https://docs.datadoghq.com/developers/dogstatsd/?code-lang=go)
 
+The DogStatsD address is taken from `STATSD_HOST` and `STATSD_PORT`. `STATSD_HOST` may also be set
+to a complete address such as `unix:///var/run/datadog/dsd.socket` (also `unixgram://`,
+`unixstream://`, or a Windows named pipe `\\.\pipe\...`) to talk to DogStatsD over a Unix Domain
+Socket; in that case `STATSD_PORT` is ignored.
+
 dogstatsd also enables so called `mogrifiers` which can
 convert from traditional stats tags into a combination of stat name and tags.
 

@@ -7,6 +7,56 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestBuildAddr(t *testing.T) {
+	tests := []struct {
+		name       string
+		givenHost  string
+		givenPort  int
+		expectAddr string
+	}{
+		{
+			name:       "hostname and port",
+			givenHost:  "localhost",
+			givenPort:  8125,
+			expectAddr: "localhost:8125",
+		},
+		{
+			name:       "unix domain socket address is used verbatim",
+			givenHost:  "unix:///var/run/datadog/dsd.socket",
+			givenPort:  8125,
+			expectAddr: "unix:///var/run/datadog/dsd.socket",
+		},
+		{
+			name:       "unixgram address is used verbatim",
+			givenHost:  "unixgram:///var/run/datadog/dsd.socket",
+			givenPort:  8125,
+			expectAddr: "unixgram:///var/run/datadog/dsd.socket",
+		},
+		{
+			name:       "unixstream address is used verbatim",
+			givenHost:  "unixstream:///var/run/datadog/dsd.socket",
+			givenPort:  8125,
+			expectAddr: "unixstream:///var/run/datadog/dsd.socket",
+		},
+		{
+			name:       "windows named pipe is used verbatim",
+			givenHost:  `\\.\pipe\dsd`,
+			givenPort:  8125,
+			expectAddr: `\\.\pipe\dsd`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &godogStatsSink{}
+			g.config.host = tt.givenHost
+			g.config.port = tt.givenPort
+
+			assert.Equal(t, tt.expectAddr, g.buildAddr())
+		})
+	}
+}
+
 func TestSeparateExtraTags(t *testing.T) {
 	tests := []struct {
 		name         string
